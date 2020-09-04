@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FrontEnd.Data;
+using FrontEnd.HealthChecks;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace FrontEnd
 {
@@ -29,8 +32,12 @@ namespace FrontEnd
                 options.Conventions.AuthorizeFolder("/Admin", "Admin");
             });
 
-            
+
             services.AddSingleton<IAdminService, AdminService>();
+
+            services.AddHealthChecks()
+                .AddCheck<BackendHealthCheck>("backend")
+                .AddDbContextCheck<IdentityDbContext>();
 
             services.AddAuthorization(options =>
             {
@@ -40,11 +47,13 @@ namespace FrontEnd
                           .RequireIsAdminClaim();
                 });
             });
-            
+
             services.AddHttpClient<IApiClient, ApiClient>(client =>
             {
                 client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
             });
+
+            
 
         }
 
@@ -73,6 +82,7 @@ namespace FrontEnd
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }

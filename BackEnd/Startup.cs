@@ -54,6 +54,9 @@ namespace BackEnd
                 //options.DescribeAllEnumsAsStrings();
             });
 
+            services.AddHealthChecks()
+                .AddDbContextCheck<ApplicationDbContext>();
+
             services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
@@ -87,6 +90,7 @@ namespace BackEnd
                 });
 
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }
